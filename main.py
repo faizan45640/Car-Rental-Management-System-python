@@ -22,7 +22,13 @@ class Car:
         return f"{self.licensePlate}"
 
 class Customer:
-    pass
+    def __init__(self,userName,password,cnic,phone) -> None:
+        self.userName=userName
+        self.password=password
+        self.cnic=cnic
+        self.phone=phone
+        self.rented=False #if the car is rented
+        pass
     
 
  
@@ -31,6 +37,7 @@ class RentalSystem:
     cars=[]
     customers=[]
     admin=Admin("admin","admin")
+    loggedInCustomer=None
     def addCar(self):
         os.system("cls")
         print("Login > Admin Menu > Manage Cars > Add Car")
@@ -126,6 +133,96 @@ class RentalSystem:
             else:
                 print("No car was found with this number plate...")
                 time.sleep(1.7)
+    
+    def addCustomer(self):
+        os.system("cls")
+        print("Login > Admin Menu > Manage Cars > Add Customers")
+        name=input("Enter the username of the customer: ")
+        password=input("Enter the password of the customer: ")
+        cnic=str(input("Please enter cnic of the customer: "))
+        phone=input("Enter the phone of customer: ")
+        #validate cnic
+       
+        if any(customer.cnic==cnic for customer in self.customers):
+                print("Customer with this cnic already exists...")
+                time.sleep(1.7)
+                return
+        else:
+            self.customers.append(Customer(name,password,cnic,phone))
+            print("Customer successfully added...")
+            time.sleep(1.7)
+            return
+    def removeCustomer(self):
+        os.system("cls")
+        print("Login > Admin Menu > Manage Cars > Remove Customers")
+        cnic=str(input("Please enter the cnic of customer to remove: "))
+        initialCount=len(self.customers)
+        self.customers=[customer for customer in self.customers if customer.cnic!=cnic]
+        if(initialCount>len(self.cars)):
+            print("Customer Successfully Removed")
+            time.sleep(1.7)
+            return
+        else:
+            print("No customer was found...")
+            time.sleep(1.7)
+            return
+    def updateCustomer(self):
+        os.system("cls")
+        print("Login > Admin Menu > Manage Cars > Update Customers")
+        cnic=str(input("Please enter the cnic of customer to update: "))
+        for customer in self.customers:
+            if(customer.cnic==cnic):
+                menuOptions=["1. Update Username" , "2. Update Password" , "3. Update Cnic","4. Update Phone"]
+                m=menu.Menu(menuOptions,color=menu.Colors.CYAN,style=menu.Styles.DEFAULT , pretext="Login > Admin Menu > Manage Cars > Update Customers")
+                userChoice=m.launch(response="index")+1
+                match userChoice:
+                    case 1:
+                        customer.userName=input("Please enter the new username: ")
+                    case 2:
+                        customer.password=input("Please enter the new password: ")
+                    case 3:
+                        cnicNew=str(input("Please enter the new cnic: "))
+                        if any(c.cnic==cnicNew for c in self.customers):
+                            print("A customer with this cnic already exists!")
+                            return
+                        else:
+                            customer.cnic=cnicNew
+                    case 4:
+                        phoneNew=int(input("Please enter the new phone: "))
+                        if any(c.phone==phoneNew for c in self.customers):
+                            print("A customer with this phone already exists!")
+                            return
+                        else:
+                            customer.phone=phoneNew
+                print("The Data was Successfully Updated..")
+                time.sleep(1.7)
+            else:
+                print("The Customer was not found...")
+                time.sleep(1.7)
+    def viewCustomers(self):
+         os.system("cls")
+         print("Login > Admin Menu > Manage Cars > View Customers")
+         t=PrettyTable(["Name","Password","Phone","CNIC"])
+         if(len(self.customers)>0):
+            for customer in self.customers:
+                t.add_row([customer.userName , customer.password, customer.phone , customer.cnic])
+                
+            else:
+                print(t)
+                os.system("pause")
+         else:
+            print("No Customers to show...")
+            time.sleep(1.7)
+
+
+                        
+
+
+    
+
+        
+
+        
                     
                          
                     
@@ -159,6 +256,17 @@ class Login:
             print("Wrong Credentials!")
             time.sleep(3)
             return False
+    @staticmethod
+    def customerLogin(*customers: Customer):
+        print("Customer Login")
+        username=input("Enter your Username: ")
+        password=input("Enter your Password: ")
+        for customer,i in enumerate(customers):
+            if(customer.userName==username and customer.password==password):
+                return customer
+        else:
+            print("Invalid Credentials")
+            return None
     
         
         
@@ -201,6 +309,29 @@ def AdminMenu():
                 if(adminChoice2==4):
                     rentalShop.updateCars()
                     continue
+        if(adminChoice1==2):
+                
+                    adminChoice2=0
+                    while(adminChoice2!=5):
+                        manageCusOptions=["1. Add Customer" , "2. Remove Customer" , "3. View Customer Data" , "4. Update Customer Data" , "5. Go Back"]
+                        m=menu.Menu(manageCusOptions,color=menu.Colors.CYAN,style=menu.Styles.DEFAULT , pretext="Login > Admin Menu > Manage Customers")
+                        adminChoice2=m.launch(response="index")+1
+                        if(adminChoice2==1):
+                            rentalShop.addCustomer()
+                            continue
+                        if(adminChoice2==2):
+                            rentalShop.removeCustomer()
+                            continue
+                        if(adminChoice2==3):
+                            rentalShop.viewCustomers()
+                            continue
+                        if(adminChoice2==4):
+                            rentalShop.updateCustomer()
+                            continue
+                        
+                        
+
+
 
 
 
