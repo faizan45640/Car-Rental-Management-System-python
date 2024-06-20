@@ -3,6 +3,8 @@ import time
 import os
 from prettytable import PrettyTable
 
+
+
 class Admin:
     def __init__(self,username,password) -> None:
         self.username=username
@@ -27,8 +29,10 @@ class Customer:
         self.password=password
         self.cnic=cnic
         self.phone=phone
-        self.rented=False #if the car is rented
+        self.rented=False #if the car is rented true
+        self.rentedCar="0" #numplate of rented car
         pass
+
     
 
  
@@ -38,6 +42,7 @@ class RentalSystem:
     customers=[]
     admin=Admin("admin","admin")
     loggedInCustomer=None
+    #admin functionalities
     def addCar(self):
         os.system("cls")
         print("Login > Admin Menu > Manage Cars > Add Car")
@@ -213,36 +218,40 @@ class RentalSystem:
          else:
             print("No Customers to show...")
             time.sleep(1.7)
-
-
-                        
-
-
-    
-
-        
-
-        
-                    
-                         
-                    
-                     
-
-                
-
-
-
-
-        
-
-        
-        
-
-
+    #customer functionalities
+    def rentCar(self,loggedInCustomer:Customer):
+        os.system("cls")
+        print("Login > Customer Menu > Rent Car")
+        if(loggedInCustomer.rented==True):
+            print("Sorry! you can't rent 2 cars at a time...")
+            time.sleep(1.7)
+            return
+        else:
+            numPlate=input("Please Enter the num plate of the car your want to rent: ")
+            for c in self.cars:
+                if(c.licensePlate==numPlate and c.available==True):
+            
+                    print("Car Information: ")
+                    print("Model: ", c.model )
+                    print("Brand: ", c.brand)
+                    print("Rent: ",c.rent , " Pkr/hr")
+                    print("Mileage: ",c.mileage, " km")
+                    choice=input("Do you want to confirm the rental? (y/n)")
+                    if(choice=="y"):
+                        for customer in self.customers:
+                            if(loggedInCustomer.cnic==customer.cnic):
+                                customer.rented=True
+                                customer.rentedCar=numPlate
+                                c.available=False
+                                print("The Car was Succesfully Rented! ")
+                                time.sleep(1.7)
+                                return
+            else:
+                print("The Car is not available at the moment...")
+                time.sleep(1.7)
+                return
+  
 rentalShop=RentalSystem()
-    
-        
-
 
 class Login:
     @staticmethod
@@ -257,11 +266,11 @@ class Login:
             time.sleep(3)
             return False
     @staticmethod
-    def customerLogin(*customers: Customer):
+    def customerLogin(customers: Customer):
         print("Customer Login")
         username=input("Enter your Username: ")
         password=input("Enter your Password: ")
-        for customer,i in enumerate(customers):
+        for customer in customers:
             if(customer.userName==username and customer.password==password):
                 return customer
         else:
@@ -285,6 +294,17 @@ def mainMenu():
     m=menu.Menu(menuOptions,color=menu.Colors.CYAN,style=menu.Styles.DEFAULT , pretext="")
     userChoice=m.launch(response="index")
     return userChoice+1
+
+def customerMenu(loggedInCustomer : Customer):
+    while(True):
+        menuOptions=["1. Rent Car" , "2. Return a car" , "3. View Cars","4. My Rental Reports","5. Logout"]
+        m=menu.Menu(menuOptions,color=menu.Colors.CYAN,style=menu.Styles.DEFAULT , pretext="Login > Customer Menu")
+        userChoice1=m.launch(response="index")+1
+        if(userChoice1==1):
+            rentalShop.rentCar(loggedInCustomer)
+    
+
+
 
 def AdminMenu():
     while(True):
@@ -354,6 +374,13 @@ def main():
             adminFound=Login.adminLogin(rentalShop.admin)
             if(adminFound==True):
                 AdminMenu()
+                continue
+        if mainChoice==2:
+            customerFound=Login.customerLogin(rentalShop.customers)
+            if(customerFound):
+                customerMenu(customerFound)
+                continue
+        
              
 
         if mainChoice==3:
