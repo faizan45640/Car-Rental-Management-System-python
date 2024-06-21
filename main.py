@@ -19,9 +19,13 @@ class Car:
         self.rent=rent
         self.licensePlate=licensePlate
         self.available=True
+        self.timesRented=0
+        
    
     def __str__(self):
         return f"{self.licensePlate}"
+    def caclculateProfit(self):
+        return self.timesRented*self.rent
 
 class Customer:
     def __init__(self,userName,password,cnic,phone) -> None:
@@ -31,6 +35,8 @@ class Customer:
         self.phone=phone
         self.rented=False #if the car is rented true
         self.rentedCar="0" #numplate of rented car
+        self.moneySpent=0
+
         pass
 
     
@@ -238,18 +244,74 @@ class RentalSystem:
                     print("Mileage: ",c.mileage, " km")
                     choice=input("Do you want to confirm the rental? (y/n)")
                     if(choice=="y"):
+                        
                         for customer in self.customers:
                             if(loggedInCustomer.cnic==customer.cnic):
                                 customer.rented=True
                                 customer.rentedCar=numPlate
                                 c.available=False
+                                c.timesRented+=1
+                                customer.moneySpent+=c.rent
                                 print("The Car was Succesfully Rented! ")
                                 time.sleep(1.7)
                                 return
+                    else:
+                        return
             else:
                 print("The Car is not available at the moment...")
                 time.sleep(1.7)
                 return
+    def returnCar(self,loggedInCustomer:Customer):
+        os.system("cls")
+        print("Login > Customer Menu > Rent Car")
+        if(loggedInCustomer.rented==False):
+            print("You have not rented any car...")
+            time.sleep(1.7)
+            return
+        else:
+            print("Your rented car's num plate: ",loggedInCustomer.rentedCar)
+
+            choice=input("Please confirm the return of car (y/n): ")
+            if(choice=="y"):
+                km=int(input("How many kms did you drive?: "))
+                for c in self.cars:
+                    if(c.licensePlate==loggedInCustomer.rentedCar):
+                        c.available=True
+                        c.mileage+=km
+                        for cus in self.customers:
+                            if(loggedInCustomer.cnic==cus.cnic):
+                                cus.rentedCar="0"
+                                cus.rented=False
+                                print("The Car was successfully returned...")
+                                time.sleep(1.7)
+                                return
+    def generateReportCar(self):
+        os.system("cls")
+        print("Login > Admin Menu > Generate Car Rental Report")
+        numPlate=input("Please enter the num plate of car you want to view report of: ")
+        for car in self.cars:
+            if(car.licensePlate==numPlate):
+                print("Car Information: ")
+                print("Model: ",car.model)
+                print("Brand: ",car.brand)
+                print("Rent: ",car.rent)
+                print("Total Profit:",car.calculateProfit())
+                return
+        else:
+            print("No Car with this Number Plate was found...")
+            time.sleep(1.7)
+
+        
+
+                
+
+
+    
+            
+
+
+
+
   
 rentalShop=RentalSystem()
 
@@ -302,6 +364,16 @@ def customerMenu(loggedInCustomer : Customer):
         userChoice1=m.launch(response="index")+1
         if(userChoice1==1):
             rentalShop.rentCar(loggedInCustomer)
+            continue
+        if(userChoice1==2):
+            rentalShop.returnCar(loggedInCustomer)
+            continue
+        if(userChoice1==3):
+            rentalShop.viewCars()
+            continue
+        if(userChoice1==5):
+            return
+        
     
 
 
@@ -348,6 +420,10 @@ def AdminMenu():
                         if(adminChoice2==4):
                             rentalShop.updateCustomer()
                             continue
+        if(adminChoice1==3):
+            rentalShop.generateReportCar()
+            continue
+        
                         
                         
 
